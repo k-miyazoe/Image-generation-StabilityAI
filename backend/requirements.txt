@@ -1,0 +1,11 @@
+ftfy
+python-dotenv
+fastapi
+uvicorn[standard]
+requests
+sqlalchemy
+mysqlclient
+python-multipart
+alembic
+pytest
+httpx

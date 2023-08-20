@@ -1,0 +1,65 @@
+version: "3"
+services:
+  frontend:
+    tty: true
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: stability_ai_web:v1.0
+    container_name: stability_ai_web
+    ports:
+      - '3000:3000'
+    working_dir: '/src'
+    volumes:
+      - './frontend:/src'
+      - image_share:/src/src/assets/
+      - image_share:/src/public/
+    environment:
+      - HOST=0.0.0.0
+    networks:
+      - app_network
+  backend:
+    tty: true
+    stdin_open: true
+    restart: always
+    depends_on:
+      - db
+    build: ./backend
+    ports:
+      - '8005:8005'
+    image: stability_ai_backend:v1.0
+    container_name: stability_ai_backend
+    volumes:
+      - ./backend/api:/usr/src/server
+      - image_share:/usr/src/server/images/
+    env_file:
+      - ./backend/.env
+    networks:
+      - app_network
+  db:
+    tty: true
+    platform: linux/x86_64
+    build: ./db
+    image: stability_ai_db:v1.0
+    container_name: stability_ai_db
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 1s
+      retries: 10
+      start_period: 3s
+      timeout: 20s
+    volumes:
+      - ./db/data:/var/lib/mysql
+    env_file:
+      - ./db/.env
+    expose:
+      - 3306
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  image_share:
